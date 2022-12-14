@@ -263,7 +263,7 @@ class Particle(object):
             # If the landmark is observed for the first time:
             if not landmark.observed:
                 # TODO: Initialize its position based on the measurement and the current Particle pose:
-                obs_angle = normalize_angle(robot_pose[2] + measurement.z_bearing)
+                obs_angle = normalize_angle(robot_pose[2] + measurement.z_bearing) # we can remove the normalize angle here
                 landmark.mu = np.add(robot_pose[0:2], [[measurement.z_range * cos(obs_angle)], [measurement.z_range * sin(obs_angle)]])
                 # get the Jacobian
                 [h, H] = self.measurement_model(landmark)
@@ -271,8 +271,6 @@ class Particle(object):
                 # TODO: initialize the EKF for this landmark
                 H_inverse = np.linalg.inv(H)
                 landmark.sigma = H_inverse.dot(Q_t).dot(H_inverse.T)
-                # Indicate that this landmark has been observed
-                landmark.observed = True
 
             else:
                 # get the expected measurement and the Jacobian
@@ -285,12 +283,17 @@ class Particle(object):
                 # TODO: compute the error between the z and expected_z (remember to normalize the angle)
                 z_difference = np.asarray([[measurement.z_range], [measurement.z_bearing]]) - expected_z
                 z_difference[1] = normalize_angle(z_difference[1])
+		        # error= np.zeros((2,1))
+		        # error[0] = measurement.z_range - expected_z[0]
+		        # error[1] = normalize_angle(normalize_angle(measurement.z_bearing) - expected_z[1])
                 # TODO: update the mean and covariance of the EKF for this landmark
                 landmark.mu = landmark.mu + K.dot(z_difference)
                 landmark.sigma = (np.identity(2) - K.dot(H)).dot(landmark.sigma)
                 # TODO: compute the likelihood of this observation, multiply with the former weight
                 # to account for observing several features in one time step
                 self.weight *= 1 / np.sqrt(np.linalg.det(2 * pi * S)) * exp(-0.5 * z_difference.T.dot(np.linalg.inv(S)).dot(z_difference))
+
+		
 
 
     def measurement_model(self, landmark_ekf):
