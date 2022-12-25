@@ -271,6 +271,8 @@ class Particle(object):
                 # TODO: initialize the EKF for this landmark
                 H_inverse = np.linalg.inv(H)
                 landmark.sigma = H_inverse.dot(Q_t).dot(H_inverse.T)
+                # Indicate that this landmark has been observed
+                landmark.observed = True
 
             else:
                 # get the expected measurement and the Jacobian
